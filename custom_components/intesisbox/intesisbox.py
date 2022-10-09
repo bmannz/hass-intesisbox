@@ -75,21 +75,21 @@ class IntesisBox(asyncio.Protocol):
         while self.is_connected:
             _LOGGER.debug("Sending keepalive")
             self._transport.write("PING\r".encode('ascii'))
-            await asyncio.sleep(45, loop=self._eventLoop)
+            await asyncio.sleep(45)
         else:
             _LOGGER.debug("Not connected, skipping keepalive")
 
     async def query_initial_state(self):
         self._transport.write("ID\r".encode('ascii'))
-        await asyncio.sleep(1, loop=self._eventLoop)
+        await asyncio.sleep(1)
         self._transport.write("LIMITS:SETPTEMP\r".encode('ascii'))
-        await asyncio.sleep(1, loop=self._eventLoop)
+        await asyncio.sleep(1)
         self._transport.write("LIMITS:FANSP\r".encode('ascii'))
-        await asyncio.sleep(1, loop=self._eventLoop)
+        await asyncio.sleep(1)
         self._transport.write("LIMITS:MODE\r".encode('ascii'))
-        await asyncio.sleep(1, loop=self._eventLoop)
+        await asyncio.sleep(1)
         self._transport.write("LIMITS:VANEUD\r".encode('ascii'))
-        await asyncio.sleep(1, loop=self._eventLoop)
+        await asyncio.sleep(1)
         self._transport.write("LIMITS:VANELR\r".encode('ascii'))
 
     def data_received(self, data):
@@ -292,6 +292,9 @@ class IntesisBox(asyncio.Protocol):
         temperature = self._device.get(FUNCTION_AMBTEMP)
         if temperature:
             temperature = int(temperature) / 10
+        # When unsupported, -32768 is reported
+        if temperature == -3276.8:
+            temperature = None
         return temperature
 
     @property
